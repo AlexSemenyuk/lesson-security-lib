@@ -3,6 +3,7 @@ package org.itstep.lessonsecuritylib.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.dialect.lock.OptimisticEntityLockException;
+import org.itstep.lessonsecuritylib.command.AuthorCommand;
 import org.itstep.lessonsecuritylib.command.PublisherCommand;
 import org.itstep.lessonsecuritylib.model.Author;
 import org.itstep.lessonsecuritylib.model.Publisher;
@@ -57,12 +58,34 @@ public class PublisherController {
         return "redirect:/publishers";
     }
 
-    @DeleteMapping(("delete/{id}"))
+    @GetMapping(("delete/{id}"))
     String delete(@PathVariable Integer id) {
         Optional<Publisher> optionalPublisher = repository.findById(id);
         optionalPublisher.ifPresent(author -> repository.deleteById(id));
         return "redirect:/publishers";
     }
+
+    @GetMapping(("edit/{id}"))
+    String datails(@PathVariable Integer id, Model model) {
+        Optional<Publisher> optionalPublisher = repository.findById(id);
+        if (optionalPublisher.isPresent()){
+            Publisher publisher = optionalPublisher.get();
+            model.addAttribute("publisher", publisher);
+        }
+        return "publisher_edit";
+    }
+    @PostMapping(("edit/{id}"))
+    String update(@PathVariable Integer id, PublisherCommand command) {
+        Optional<Publisher> optionalPublisher = repository.findById(id);
+        if (optionalPublisher.isPresent()){
+            Publisher publisher = optionalPublisher.get();
+            publisher.setName(command.name());
+            repository.save(publisher);
+        }
+        return "redirect:/publishers";
+    }
+
+
 }
 
 

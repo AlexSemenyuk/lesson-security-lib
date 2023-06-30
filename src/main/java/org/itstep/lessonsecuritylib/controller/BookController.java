@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,6 +56,40 @@ public class BookController {
     public String delete(@PathVariable Integer id) {
         Optional<Book> optionalBook = bookRepository.findById(id);
         optionalBook.ifPresent(book -> bookRepository.deleteById(id));
+        return "redirect:/books";
+    }
+
+    @GetMapping(("/edit/{id}"))
+    String datails(@PathVariable Integer id, Model model) {
+        Optional<Book> optionalBook = bookRepository.findById(id);
+        if (optionalBook.isPresent()){
+            Book book = optionalBook.get();
+            model.addAttribute("book", book);
+            model.addAttribute("bookAuthors", book.getAuthors());
+            model.addAttribute("publishers", publisherRepository.findAll());
+            model.addAttribute("authors", authorRepository.findAll());
+        }
+        return "book_edit";
+    }
+    @PostMapping(("edit/{id}"))
+    String update(@PathVariable Integer id, BookCommand command) {
+        Optional<Book> optionalBook = bookRepository.findById(id);
+        Optional<Publisher> optionalPublisher = publisherRepository.findById(command.publisherId());
+        Optional<List<Author>> optionalAuthors = Optional.of(authorRepository.findAllById(command.authorsIds()));
+        if (optionalBook.isPresent() &&
+                optionalPublisher.isPresent() &&
+                optionalAuthors.isPresent()){
+            Book book = optionalBook.get();
+            book.setTitle(command.title());
+
+            Publisher publisher = optionalPublisher.get();
+            book.setPublisher(publisher);
+
+            List<Author> authors = optionalAuthors.get();
+            book.setAuthors(new ArrayList<>());
+            authors.stream().forEach(author -> book.getAuthors().add(author));
+            bookRepository.save(book);
+        }
         return "redirect:/books";
     }
 }
