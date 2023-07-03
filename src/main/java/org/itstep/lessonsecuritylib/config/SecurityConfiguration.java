@@ -10,7 +10,6 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl;
@@ -30,7 +29,6 @@ public class SecurityConfiguration {
     public DataSource dataSource() {
         return new EmbeddedDatabaseBuilder()
                 .setType(EmbeddedDatabaseType.H2)
-                .setName("testDb")
                 .addScript(JdbcDaoImpl.DEFAULT_USER_SCHEMA_DDL_LOCATION)
                 .build();
     }
@@ -74,7 +72,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize ->
                         authorize
                                 .requestMatchers("/").permitAll()
-                                .requestMatchers("/h2-console/**").authenticated()
+                                .requestMatchers("/h2-console").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/books").hasAnyRole("USER", "EDITOR", "ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/books").hasAnyRole("EDITOR", "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/books/edit/**").hasAnyRole("EDITOR", "ADMIN")
@@ -97,7 +95,6 @@ public class SecurityConfiguration {
                                 .permitAll())
 //                .formLogin(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults())
-//                .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .logout(logout ->
                         logout
                                 .logoutUrl("/logout")
